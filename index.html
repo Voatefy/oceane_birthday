@@ -438,7 +438,12 @@
 
   /* AJUSTEMENTS MOBILE */
   @media (max-width: 480px){
-    .page{ padding: 40px 16px; }
+    .page{
+      padding: 80px 16px 60px;
+      justify-content: flex-start;
+      -webkit-overflow-scrolling: touch;
+    }
+    .page-num{ position: static; margin-top: 24px; opacity:0.6; }
     .letter{ padding: 32px 22px; border-radius: 18px; }
     .letter p{ font-size: 17px; margin-bottom: 18px; }
     .verse{ font-size: 16px !important; padding-top: 18px; }
@@ -455,7 +460,6 @@
     .cd-final{ font-size: 24px; }
     #joke-btn{ font-size: 12px; padding: 10px 16px; bottom: 66px; }
     #buddy{ display:none; }
-    .page-num{ font-size: 11px; bottom: 14px; right: 16px; }
   }
 
   /* INTRO TIMIDE */
@@ -662,12 +666,7 @@
     100%{ transform: translate(var(--ex), var(--ey)) scale(var(--es)) rotate(var(--er)); opacity: 0; }
   }
 </style>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-<script type="text/javascript">
-  emailjs.init({
-    publicKey: "0kG4cW80fXTjSXkZ9"
-  });
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -926,30 +925,40 @@
     document.querySelectorAll('.gift-step').forEach(s=>s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
-  function chooseGift(choice){
-    // Envoie le choix du cadeau à ton adresse via EmailJS
-    emailjs.send(
-      "service_hse1t6v",
-      "template_uubk84u",
-      {
-        cadeau: choice
-      }
-    )
-    .then(
-      function(response) {
-        console.log("Réponse envoyée avec succès :", response.status, response.text);
-      },
-      function(error) {
-        console.error("Erreur lors de l'envoi :", error);
-      }
-    );
 
-    // Affiche immédiatement le résultat sur le site
+  // ===== EMAILJS : remplace les 3 valeurs ci-dessous par les tiennes =====
+  const EMAILJS_PUBLIC_KEY  = "TON_PUBLIC_KEY";
+  const EMAILJS_SERVICE_ID  = "TON_SERVICE_ID";
+  const EMAILJS_TEMPLATE_ID = "TON_TEMPLATE_ID";
+  // =========================================================================
+
+  let emailjsReady = false;
+  try{
+    if(window.emailjs && !EMAILJS_PUBLIC_KEY.startsWith('TON_')){
+      emailjs.init(EMAILJS_PUBLIC_KEY);
+      emailjsReady = true;
+    }
+  }catch(e){ console.warn('EmailJS non configuré :', e); }
+
+  function sendChoiceEmail(choiceText){
+    if(!emailjsReady) return; // pas encore configuré, on ignore silencieusement
+    emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      choice: choiceText,
+      name: "Kanto Océane"
+    }).catch(e => console.warn('Envoi email échoué :', e));
+  }
+
+  function handleNo(){
+    goStep('step-no');
+    sendChoiceEmail("Elle a répondu NON, elle ne veut pas de cadeau 😅");
+  }
+
+  function chooseGift(choice){
     document.getElementById('final-text').textContent =
       `Va pour ${choice} ! J'ai hâte de te la donner (et de voir ta réaction, j'ai déjà le stress 😄). Bon anniversaire, Kanto Océane 🌷`;
-
     goStep('step-final');
     triggerExplosion();
+    sendChoiceEmail(choice);
   }
 
   // INTRO TIMIDE - effet machine à écrire hésitant
